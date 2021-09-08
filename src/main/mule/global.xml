@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:error-handler-plugin="http://www.mulesoft.org/schema/mule/error-handler-plugin"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd 
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/error-handler-plugin http://www.mulesoft.org/schema/mule/error-handler-plugin/current/mule-error-handler-plugin.xsd">
+
+	<http:listener-config name="manage-order-process-api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    
+    <apikit:config name="manage-order-process-api-config" api="manage-order-process-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	
+	<configuration-properties doc:name="Configuration properties" doc:id="7ecef011-a7d9-4666-afaf-802cbd0fdd08" file="properties/${env}.properties" />
+	
+	<!-- <api-gateway:autodiscovery apiId="${api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="89d229d6-ecb3-4122-9a78-05ebcf1dafea" flowRef="manage-order-process-api-main" /> -->
+	
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="96b05cc2-ea2b-4a52-ac67-05d647df89c6" file="properties/${env}.properties" key="${encryption.key}" />
+	
+	<http:request-config name="Salesforce_HTTP_Request_config" doc:name="HTTP Request configuration" doc:id="0122f347-9686-4f43-8fd0-172a622310ee" basePath="/api" responseTimeout="30000">
+		<http:request-connection host="${salesforce.system.api.host}" port="${salesforce.system.api.port}" />
+	</http:request-config>
+	
+	<json-logger:config name="JSON_Logger_Config" doc:name="JSON Logger Config" doc:id="10b7df69-fff4-43dd-9bc8-26ad5f3a3599" environment="${env}" />
+	
+	<error-handler-plugin:config name="Error_Handler_Plugin_Config" doc:name="Error Handler Plugin Config" doc:id="b523749c-619e-42c0-815d-9d90024e4bba" apiVersion="1.0.0" apiName="manage-order-system-api"/>
+	
+</mule>

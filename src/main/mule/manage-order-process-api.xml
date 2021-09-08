@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:error-handler-plugin="http://www.mulesoft.org/schema/mule/error-handler-plugin" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/error-handler-plugin http://www.mulesoft.org/schema/mule/error-handler-plugin/current/mule-error-handler-plugin.xsd">
+    <flow name="manage-order-process-api-main">
+        <http:listener config-ref="manage-order-process-api-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <json-logger:logger doc:name="Logger" doc:id="944a5d61-cf55-4614-a7c0-6e19699475b1" config-ref="JSON_Logger_Config" message="Resource flow started"/>
+		<apikit:router config-ref="manage-order-process-api-config" />
+        <json-logger:logger doc:name="Logger" doc:id="4d6d7d24-aee9-4dc3-9d28-b35b94b5a7df" config-ref="JSON_Logger_Config" message="Resource flow ended" tracePoint="END"/>
+		<error-handler>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a29956d3-ba42-418e-96a2-f6d71db5d53f" >
+				<error-handler-plugin:on-error doc:name="Process Error" doc:id="15609ffa-def8-4ec3-92ab-095e5fc1d586" />
+				<set-variable value="#[attributes.httpStatus]" doc:name="Set HttpStatus Variable" doc:id="c765c9f4-105b-4695-aff8-3874dd33684f" variableName="httpStatus"/>
+			</on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="manage-order-process-api-console">
+        <http:listener config-ref="manage-order-process-api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="manage-order-process-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="post:\create-order:application\json:manage-order-process-api-config">
+    	<json-logger:logger doc:name="Logger" doc:id="badaa067-d930-4612-bf5f-b0e4602b127b" config-ref="JSON_Logger_Config" message="Create Order flow execution started"/>
+		<flow-ref doc:name="manage-order-process-api-impl-flow" doc:id="1f1742b5-45e0-401c-9567-824a8441a04c" name="manage-order-process-api-impl-flow"/>
+		<json-logger:logger doc:name="Logger" doc:id="ddb77495-0e10-4969-846b-9116d9289b91" config-ref="JSON_Logger_Config" message="Create Order flow execution ended" tracePoint="END"/>
+    </flow>
+</mule>

@@ -1,0 +1,33 @@
+{
+	"order": {
+		"poNumber": 123461,
+		"signatureRequiredFlag": false,
+		"shipInstructions": "Don't break it",
+		"giftWrapFlag": true,
+		"giftWrapMessage": "You rock!",
+		"currencyCode": "USD",
+		"subTotal": 41.5,
+		"email": "mark.evans12@gmail.com"
+	},
+	"customer": {
+		"firstName": "Mark",
+		"lastName": "Evans",
+		"address": {
+			"address1": "1234 Main St",
+			"city": "San Jose",
+			"zipCode": 12345,
+			"country": "US"
+		}
+	},
+	"items": [{
+		"id": "12345",
+		"category": "Shirts",
+		"quantity": 2,
+		"size": "M"
+	}, {
+		"id": "67890",
+		"category": "Hoodie",
+		"quantity": 3,
+		"size": "M"
+	}]
+}

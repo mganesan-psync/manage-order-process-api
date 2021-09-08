@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	
+	<flow name="manage-order-process-api-impl-flow" doc:id="036bf84f-7a89-4384-88ea-20652e0a579d">
+		<json-logger:logger doc:name="Logger" doc:id="ebc6d194-a684-4982-ace2-ffbff03aeed2" config-ref="JSON_Logger_Config" message="Implementation flow started" tracePoint="FLOW"/>
+		<set-variable value="#[randomInt(1000000)]" doc:name="PO Number" doc:id="7b01ec52-e92b-4471-9924-73f7dee264d6" variableName="poNumber"/>
+		<ee:transform doc:name="Set Incoming Payload Variable" doc:id="825433d7-ca85-4dd4-b5ee-a3128b301343" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="IncomingPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="createOrder" doc:id="3e91693a-62fe-4956-bef7-11b20e7b35b6" name="createOrder"/>
+		<flow-ref doc:name="createCustomer" doc:id="71470c81-0495-4415-88d5-d0cf382ebcde" name="createCustomer"/>
+		<flow-ref doc:name="createItems" doc:id="057d66c4-2663-4e56-8107-66dca0783b1a" name="createItems"/>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Map Response">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Order processed successfully"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<json-logger:logger doc:name="Logger" doc:id="490809a2-ab08-44e3-93c6-c1e7f36acc00" config-ref="JSON_Logger_Config" message="Implementation flow finished" tracePoint="FLOW"/>
+	</flow>
+	<sub-flow name="createOrder" doc:id="aeb63a46-6b5d-4aeb-a51a-08f98050629f" >
+		<http:request method="POST" doc:name="Request" doc:id="e8171003-d060-4bbd-b015-e523ad376ede" config-ref="Salesforce_HTTP_Request_config" path="/order">
+			<http:body ><![CDATA[#[output application/json ---payload.order - "poNumber" ++ { "poNumber": vars.poNumber }]]]></http:body>
+		</http:request>
+		<set-variable value="#[payload.orderId]" doc:name="OrderId" doc:id="226b2522-ff0c-4e30-84ff-c882dea57cff" variableName="orderId"/>
+	</sub-flow>
+	<sub-flow name="createCustomer" doc:id="78b93ff7-2d8d-4bc0-82a3-8b8599c65b73" >
+		<ee:transform doc:name="Map Create Customer Request" doc:id="348650a2-6ff0-4946-af1b-af3236f3cabb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var address = vars.incomingPayload.customer.address.address1 ++ " " ++
+	vars.incomingPayload.customer.address.city ++ " " ++
+	vars.incomingPayload.customer.address.zipCode ++ " " ++
+	vars.incomingPayload.customer.address.country
+---
+vars.incomingPayload.customer - "address" ++ { address: address } ++ { orderId: vars.orderId }]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="5988b9dd-baf9-4c1e-b8a2-8310e117fa21" config-ref="Salesforce_HTTP_Request_config" path="/customer"/>
+		<set-variable value="#[payload.customerId]" doc:name="CustomerId" doc:id="e0b97537-9a80-4066-975b-34ffc882d69f" variableName="customerId"/>
+	</sub-flow>
+	<sub-flow name="createItems" doc:id="94c1a303-2e22-437d-bb7a-e15a1467fc07" >
+		<foreach doc:name="For Each" doc:id="e22693e2-8262-41d3-af11-73f8c41e73a7" collection="#[vars.incomingPayload.items]">
+			<ee:transform doc:name="Map Create Item Request" doc:id="5851af83-6662-41ef-b790-f7bc6facc50b" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ { orderId: vars.orderId }]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<http:request method="POST" doc:name="Request" doc:id="4f96a545-77b5-4582-9fd6-e29a7a57aba6" config-ref="Salesforce_HTTP_Request_config" path="/item" />
+		</foreach>
+	</sub-flow>
+	 
+</mule>

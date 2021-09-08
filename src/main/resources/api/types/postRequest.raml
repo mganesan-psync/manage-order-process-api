@@ -1,0 +1,46 @@
+#%RAML 1.0 DataType
+
+type: object
+additionalProperties: false
+properties:
+  order:
+    type: object
+    properties:
+      poNumber: number
+      signatureRequiredFlag: boolean
+      shipInstructions: string
+      giftWrapFlag: boolean
+      giftWrapMessage: string
+      currencyCode: 
+        type: string
+        pattern: "[A-Za-z]{3}"
+        example: "AED"
+        required: true
+      subTotal: number
+      email: string
+
+  customer:
+    type: object
+    properties:
+      firstName: string
+      lastName: string
+      address: 
+        type: object
+        properties:
+          address1: string
+          city: string
+          zipCode: number
+          country: string
+
+  items:
+    type: array
+    items:
+      properties:
+        id: string
+        category: string
+        quantity: number
+        size: 
+          type: string
+          enum: ["S","M","L","XL"]
+          example: "L"
+          required: true

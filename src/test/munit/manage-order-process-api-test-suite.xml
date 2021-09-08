@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="manage-order-process-api-test-suite.xml" />
+	
+	<munit:test name="manage-order-process-api-test-suite-post:\create-order:application\json:manage-order-process-api-configTest-Success" doc:id="3d8c1efb-83f3-4c01-9f1b-2c20c16e8c26" description="Test">
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="Mock Create Order" doc:id="aca7a1ca-cec9-444d-928d-ba988106f349" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="POST" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/order" attributeName="path" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('orderResponse.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Create Customer" doc:id="af092a3f-c184-46ee-b396-f119763c16e1" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="POST" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/customer" attributeName="path" />
+					<munit-tools:with-attribute whereValue="POST" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/customer" attributeName="path" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Create Item" doc:id="43b4c338-66d0-4cda-8b9c-1197fc907373" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="POST" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/item" attributeName="path" />
+					<munit-tools:with-attribute whereValue="POST" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/item" attributeName="path" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:name="Set Input Payload" doc:id="95ccf030-cb06-4d64-a4e6-9c85416991f6" >
+				<munit:payload value="#[MunitTools::getResourceAsString('createRequest.json')]" mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\create-order:application\json:manage-order-process-api-config" doc:id="b1a3a4d1-aa4d-4649-a5ea-2157a8dfdcbf" name="post:\create-order:application\json:manage-order-process-api-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert payload matches" doc:id="4ca3590d-eb61-4707-ac1b-5a1e272cb5c5" expression="#[payload.message]" is='#[MunitTools::equalTo("Order processed successfully")]'/>
+		</munit:validation>
+	</munit:test>
+</mule>

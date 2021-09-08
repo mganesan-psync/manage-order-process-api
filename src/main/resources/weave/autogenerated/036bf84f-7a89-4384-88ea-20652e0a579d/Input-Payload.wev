@@ -1,0 +1,29 @@
+%dw 2.0
+
+type auto_036bf84f_7a89_4384_88ea_20652e0a579d_Input_Payload = {|
+  items: Array<{    quantity: Number,     size: "S" | "XL" | "L" | "M",     id: String,     category: String,     _?: Any  }>, 
+  order: {
+    signatureRequiredFlag: Boolean, 
+    shipInstructions: String, 
+    giftWrapMessage: String, 
+    subTotal: Number, 
+    giftWrapFlag: Boolean, 
+    poNumber: Number, 
+    currencyCode: String, 
+    email: String, 
+    _?: Any
+  }, 
+  customer: {
+    firstName: String, 
+    lastName: String, 
+    address: {
+      zipCode: Number, 
+      country: String, 
+      city: String, 
+      address1: String, 
+      _?: Any
+    }, 
+    _?: Any
+  }
+|}
+

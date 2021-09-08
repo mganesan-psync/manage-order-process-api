@@ -1,0 +1,20 @@
+#%RAML 1.0
+title: manage-order-process-api
+protocols:
+  - HTTP
+  - HTTPS
+version: v1
+
+/create-order:
+  post:
+    description: Create order,customer and items in Salesforce
+    body:
+      application/json:
+        type: !include types/postRequest.raml
+        example: !include examples/postRequest.json
+
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"message": "Order processed successully"}
